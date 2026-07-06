@@ -19,6 +19,7 @@ print(df.columns.tolist())
 #missing values
 print(df.isnull().sum())
 
+# Create one final text field for the email
 df["combined_text"] = (
     df["subject"].astype(str) + " " +
     df["sender"].astype(str) + " " +
@@ -27,12 +28,8 @@ df["combined_text"] = (
 
 df[["subject", "sender", "email_text", "combined_text"]].head()
 
-# Create one final text field for the email
-df["combined_text"] = (
-    df["subject"].astype(str) + " " +
-    df["sender"].astype(str) + " " +
-    df["email_text"].astype(str)
-)
+
+
 
 # numeric form
 
