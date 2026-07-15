@@ -1,67 +1,202 @@
-import pandas as pd
+import re
 import joblib
-from scipy.sparse import hstack, csr_matrix
+import numpy as np
+from scipy.sparse import hstack
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+
+# Import Zero Trust analysis
+from zero_trust import zero_trust_analysis
+
 
 # =========================
-# 1) Load trained model and vectorizer
+# LOAD TRAINED ARTIFACTS
 # =========================
-model = joblib.load("models/ml_model.pkl")
+ml_model = joblib.load("models/ml_model.pkl")
 tfidf = joblib.load("models/tfidf_vectorizer.pkl")
+dl_model = load_model("models/dl_model.keras")
+tokenizer = joblib.load("models/tokenizer.pkl")
 
-print("Model and vectorizer loaded successfully!")
+# Same value as training notebook
+MAX_LEN = 200
 
-# =========================
-# 2) New email example
-# =========================
-new_email = {
-    "subject": "Urgent: Verify Your Bank Account",
-    "sender": "support@secure-bank-login.com",
-    "email_text": "Your account has been suspended. Click here immediately to verify your identity and avoid permanent closure.",
-    "has_link": 1,
-    "has_attachment": 0,
-    "urgency_flag": 1
-}
 
 # =========================
-# 3) Combine text
+# TEXT PREPROCESSING
 # =========================
-combined_text = (
-    str(new_email["subject"]) + " " +
-    str(new_email["sender"]) + " " +
-    str(new_email["email_text"])
-)
+def clean_text(text):
+    """
+    Clean email text:
+    - lower case
+    - remove URLs
+    - remove special characters
+    - remove extra spaces
+    """
+    if text is None:
+        return ""
+
+    text = str(text).lower()
+    text = re.sub(r"http\S+|www\S+", " ", text)   # remove urls
+    text = re.sub(r"[^a-zA-Z0-9\s]", " ", text)   # keep only letters/numbers/spaces
+    text = re.sub(r"\s+", " ", text).strip()      # remove extra spaces
+    return text
+
 
 # =========================
-# 4) Convert text into TF-IDF
+# FEATURE PREPARATION
 # =========================
-text_vector = tfidf.transform([combined_text])
+def prepare_email_input(subject, sender, email_text, has_link, has_attachment, urgency_flag):
+    """
+    Prepare input exactly like training time.
+    Returns:
+        combined_text_clean
+        meta_array
+    """
+    subject = "" if subject is None else str(subject)
+    sender = "" if sender is None else str(sender)
+    email_text = "" if email_text is None else str(email_text)
+
+    # Combine text same as notebook
+    combined_text = subject + " " + sender + " " + email_text
+    combined_text_clean = clean_text(combined_text)
+
+    # Metadata array shape: (1, 3)
+    meta_array = np.array([[int(has_link), int(has_attachment), int(urgency_flag)]])
+
+    return combined_text_clean, meta_array
+
 
 # =========================
-# 5) Metadata features
+# ML PREDICTION
 # =========================
-meta_features = csr_matrix([[
-    new_email["has_link"],
-    new_email["has_attachment"],
-    new_email["urgency_flag"]
-]])
+def predict_ml(subject, sender, email_text, has_link, has_attachment, urgency_flag):
+    """
+    Predict using Logistic Regression model
+    """
+    combined_text_clean, meta_array = prepare_email_input(
+        subject, sender, email_text, has_link, has_attachment, urgency_flag
+    )
+
+    # TF-IDF transform
+    text_tfidf = tfidf.transform([combined_text_clean])
+
+    # Combine text features + metadata
+    final_features = hstack([text_tfidf, meta_array])
+
+    # Predict label
+    pred_label = ml_model.predict(final_features)[0]
+
+    # Predict phishing probability
+    pred_proba = ml_model.predict_proba(final_features)[0][1]
+
+    label_name = "phishing" if pred_label == 1 else "legitimate"
+
+    return {
+        "model": "Machine Learning (Logistic Regression)",
+        "label": int(pred_label),
+        "label_name": label_name,
+        "phishing_confidence": round(float(pred_proba) * 100, 2)
+    }
+
 
 # =========================
-# 6) Combine text + metadata
+# DL PREDICTION
 # =========================
-final_input = hstack([text_vector, meta_features])
+def predict_dl(subject, sender, email_text, has_link, has_attachment, urgency_flag):
+    """
+    Predict using Deep Learning model
+    Note:
+    Current DL model uses only text input (same as notebook training).
+    Metadata is accepted for API consistency but not used inside DL model right now.
+    """
+    combined_text_clean, meta_array = prepare_email_input(
+        subject, sender, email_text, has_link, has_attachment, urgency_flag
+    )
+
+    # Convert text to sequence
+    seq = tokenizer.texts_to_sequences([combined_text_clean])
+
+    # Pad sequence
+    padded = pad_sequences(seq, maxlen=MAX_LEN, padding="post", truncating="post")
+
+    # Predict probability
+    dl_prob = float(dl_model.predict(padded, verbose=0)[0][0])
+
+    # Convert to label
+    pred_label = 1 if dl_prob > 0.5 else 0
+    label_name = "phishing" if pred_label == 1 else "legitimate"
+
+    return {
+        "model": "Deep Learning (TensorFlow/Keras)",
+        "label": int(pred_label),
+        "label_name": label_name,
+        "phishing_confidence": round(dl_prob * 100, 2)
+    }
+
 
 # =========================
-# 7) Predict
+# FINAL HYBRID + ZERO TRUST PREDICTION
 # =========================
-prediction = model.predict(final_input)[0]
-confidence = model.predict_proba(final_input)[0][1]
+def predict_email(subject, sender, email_text, has_link, has_attachment, urgency_flag):
+    """
+    Run ML + DL + Zero Trust analysis and return a combined response.
+    """
+    # Step 1: ML result
+    ml_result = predict_ml(subject, sender, email_text, has_link, has_attachment, urgency_flag)
+
+    # Step 2: DL result
+    dl_result = predict_dl(subject, sender, email_text, has_link, has_attachment, urgency_flag)
+
+    # Step 3: Final decision strategy
+    # If either model says phishing -> final phishing
+    if ml_result["label"] == 1 or dl_result["label"] == 1:
+        final_label = 1
+        final_label_name = "phishing"
+    else:
+        final_label = 0
+        final_label_name = "legitimate"
+
+    # Final confidence = max of both phishing confidences
+    final_confidence = max(
+        ml_result["phishing_confidence"],
+        dl_result["phishing_confidence"]
+    )
+
+    # Step 4: Zero Trust Analysis
+    zero_trust_result = zero_trust_analysis(
+        subject=subject,
+        sender=sender,
+        email_text=email_text,
+        has_link=has_link,
+        has_attachment=has_attachment,
+        urgency_flag=urgency_flag,
+        ml_result=ml_result,
+        dl_result=dl_result
+    )
+
+    # Step 5: Final combined output
+    return {
+        "final_prediction": final_label_name,
+        "final_label": final_label,
+        "final_confidence": final_confidence,
+        "ml_result": ml_result,
+        "dl_result": dl_result,
+        "zero_trust_result": zero_trust_result
+    }
+
 
 # =========================
-# 8) Show result
+# TEST RUN (optional)
 # =========================
-if prediction == 1:
-    print("\nPrediction: PHISHING EMAIL")
-else:
-    print("\nPrediction: LEGITIMATE EMAIL")
+if __name__ == "__main__":
+    sample = predict_email(
+        subject="Urgent Account Verification",
+        sender="support@fakebank.com",
+        email_text="Your account will be suspended. Click here to verify your login immediately.",
+        has_link=1,
+        has_attachment=0,
+        urgency_flag=1
+    )
 
-print("Phishing confidence:", round(confidence * 100, 2), "%")
+    print("Sample Prediction Result:")
+    print(sample)

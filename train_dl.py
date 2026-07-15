@@ -1,7 +1,6 @@
 import pandas as pd 
 import joblib 
 import os
-
 from sklearn.model_selection import train_test_split
 
 #load dataset
@@ -138,7 +137,7 @@ dl_results_df["dl_predicted_label"]= dl_results_df["dl_predicted_label"].map({1:
 dl_results_df.head(10)
 
 # Save Deep Learning Model
-os.makedirs("model", exist_ok=True)
+os.makedirs("models", exist_ok=True)
 dl_model.save("models/dl_model.keras")
 
 # Save Tokenizer 

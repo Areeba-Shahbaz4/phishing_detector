@@ -1,0 +1,21 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# VS Code settings
+.vscode/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environment files
+.env
+venv/
+.venv/
+
+# Database (optional)
+database/*.db
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,165 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f7fb;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    width: 90%;
+    max-width: 1100px;
+    margin: 30px auto;
+    background: white;
+    padding: 25px;
+    border-radius: 14px;
+    box-shadow: 0 4px 18px ;
+}
+h1 {
+    text-align: center;
+    color: #6c0515;
+    margin-bottom: 10px;
+}
+
+.subtitle{
+    text-align: center;
+    color: #3f3f3f;
+    margin-bottom: 25px;
+}
+
+.section-title{
+    margin-top: 25px;
+    margin-bottom: 22px;
+    color: #6c0515;
+    border-left: 5px solid #6c0515;
+    padding-left: 10px;
+}
+label {
+    font-weight: bold;
+    display: block;
+    margin-top: 12px;
+    margin-bottom: 6px;
+    /* color: #333; */
+}
+
+input [type="text"], textarea, select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+textarea {
+    min-height: 140px;
+    resize: vertical;
+}
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.btn{
+    width: 100%;
+    margin-top: 22px;
+    background: #6c0515;
+    color: white;
+    border: none;
+    padding: 14px;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn:hover {
+    background: #510812;
+}
+
+.result-box {
+    margin-top: 30px;
+    padding: 18px;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid #d9e2f1;
+}
+
+.result-grid{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.card {
+    background: rgb(255, 254, 254);
+    padding: 16px;
+    border-radius: 10px;
+    border: 1px solid #e3eaf5;
+    box-shadow: 0 2px 8px;
+}
+.card h3{
+    margin-top: 0;
+    color: #510812;
+}
+
+.highlight {
+    font-size: 18px;
+    font-weight: bold;
+    color: green;
+}
+.phishing {
+    color: red;
+    font-weight: bold;
+}
+.legitimate {
+    color: green;
+    font-weight: bold;
+}
+
+.critical {
+    color: red;
+    font-weight: bold;
+}
+.high {
+    color: orange;
+    font-weight: bold;
+}
+
+.medium {
+    color: #f9a825;
+    font-weight: bold;
+}
+
+.low {
+    color: greenyellow;
+    font-weight: bold;
+}
+ul {
+    margin-top: 10px;
+    padding-left: 20px;
+}
+
+.error-box {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    background: #ffe5e5;
+    color: #b71c1c;
+    border: 1px solid;
+}
+
+.footer-note {
+    margin-top: 25px;
+    font-size: 13px;
+    color: #3f3f3f;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .grid-2, .result-grid {
+        grid-template-columns: 1fr;
+    }
+}
