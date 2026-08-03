@@ -1,21 +1,16 @@
-# Python cache
+# Gmail Secrets
+gmail_integration.py
+credentials.json
+client_secret.json
+token.json
+.env
+
+# Python
 __pycache__/
 *.pyc
 
-# VS Code settings
+# VS Code
 .vscode/
 
-# Jupyter
-.ipynb_checkpoints/
-
-# Environment files
-.env
-venv/
-.venv/
-
-# Database (optional)
-database/*.db
-
-# OS files
-.DS_Store
-Thumbs.db
+# Database
+*.db

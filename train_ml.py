@@ -29,8 +29,6 @@ df["combined_text"] = (
 df[["subject", "sender", "email_text", "combined_text"]].head()
 
 
-
-
 # numeric form
 
 df["label_num"] = df["label"].map({"phishing": 1, "legitimate": 0})
