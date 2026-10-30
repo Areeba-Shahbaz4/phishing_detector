@@ -1,4 +1,5 @@
 import re
+from config import Config
 
 
 # =========================
@@ -115,12 +116,12 @@ def zero_trust_analysis(subject, sender, email_text,
         reasons.append("DL model flagged the email as phishing.")
 
     # 3) High ML confidence
-    if ml_result["phishing_confidence"] >= 80:
+    if ml_result["phishing_confidence"] >= Config.ML_CONFIDENCE_THRESHOLD:
         risk_score += 10
         reasons.append("ML phishing confidence is high.")
 
     # 4) High DL confidence
-    if dl_result["phishing_confidence"] >= 70:
+    if dl_result["phishing_confidence"] >= Config.DL_CONFIDENCE_THRESHOLD:
         risk_score += 10
         reasons.append("DL phishing confidence is high.")
 

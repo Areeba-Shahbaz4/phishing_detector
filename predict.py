@@ -4,6 +4,7 @@ import numpy as np
 from scipy.sparse import hstack
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
+from config import Config
 
 # Import Zero Trust analysis
 from zero_trust import zero_trust_analysis
@@ -12,10 +13,10 @@ from zero_trust import zero_trust_analysis
 # =========================
 # LOAD TRAINED ARTIFACTS
 # =========================
-ml_model = joblib.load("models/ml_model.pkl")
-tfidf = joblib.load("models/tfidf_vectorizer.pkl")
-dl_model = load_model("models/dl_model.keras")
-tokenizer = joblib.load("models/tokenizer.pkl")
+ml_model = joblib.load(Config.ML_MODEL_PATH)
+tfidf = joblib.load(Config.TFIDF_VECTORIZER_PATH)
+dl_model = load_model(Config.DL_MODEL_PATH)
+tokenizer = joblib.load(Config.TOKENIZER_PATH)
 
 # Same value as training notebook
 MAX_LEN = 200

@@ -1,10 +1,11 @@
-import pandas as pd 
-import joblib 
+import pandas as pd
+import joblib
 import os
 from sklearn.model_selection import train_test_split
+from config import Config
 
 #load dataset
-df = pd.read_excel(r"C:\Users\DELL\Documents\zero_trust_Email_phishing_detector\dataset\phishing_dataset.xlsx")
+df = pd.read_excel(Config.DATASET_PATH)
 print(df.head())
 
 print("dataset shape:", df.shape)
@@ -137,9 +138,9 @@ dl_results_df["dl_predicted_label"]= dl_results_df["dl_predicted_label"].map({1:
 dl_results_df.head(10)
 
 # Save Deep Learning Model
-os.makedirs("models", exist_ok=True)
-dl_model.save("models/dl_model.keras")
+os.makedirs(Config.MODELS_DIR, exist_ok=True)
+dl_model.save(Config.DL_MODEL_PATH)
 
-# Save Tokenizer 
-joblib.dump (tokenizer, "models/tokenizer.pkl")
+# Save Tokenizer
+joblib.dump(tokenizer, Config.TOKENIZER_PATH)
 print("Deep learning model and tokenizer saved successfully")
