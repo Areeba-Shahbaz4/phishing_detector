@@ -4,14 +4,14 @@ credentials.json
 client_secret.json
 token.json
 .env
-.env.example
 
 # Python
 __pycache__/
 *.pyc
 
-# VS Code
+# Editors / local tooling
 .vscode/
+.claude/
 
 # Database
 *.db
