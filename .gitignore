@@ -9,8 +9,14 @@ token.json
 __pycache__/
 *.pyc
 
-# VS Code
+# Editors / local tooling
 .vscode/
+.claude/
 
 # Database
 *.db
+
+# Models (optional - uncomment if you don't want to commit trained models)
+# models/*.pkl
+# models/*.keras
+# models/*.h5

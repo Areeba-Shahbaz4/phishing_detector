@@ -1,15 +1,17 @@
 import pandas as pd
 import numpy as np
-import re 
-import joblib 
+import re
+import joblib
+import os
 
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from config import Config
 
 #load dataset
-df = pd.read_excel(r"C:\Users\DELL\Documents\zero_trust_Email_phishing_detector\dataset\phishing_dataset.xlsx")
+df = pd.read_excel(Config.DATASET_PATH)
 print(df.head())
 
 print("dataset shape:", df.shape)
@@ -159,15 +161,16 @@ results_df.head(10)
 
 import joblib
 import os
+from config import Config
 
 # Create models folder if it does not exist
-os.makedirs("models", exist_ok=True)
+os.makedirs(Config.MODELS_DIR, exist_ok=True)
 
 # Save trained ML model
-joblib.dump(ml_model, "models/ml_model.pkl")
+joblib.dump(ml_model, Config.ML_MODEL_PATH)
 
 # Save TF-IDF vectorizer
-joblib.dump(tfidf, "models/tfidf_vectorizer.pkl")
+joblib.dump(tfidf, Config.TFIDF_VECTORIZER_PATH)
 
 print("ML model and TF-IDF vectorizer saved successfully!")
 

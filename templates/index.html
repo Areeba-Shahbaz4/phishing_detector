@@ -3,316 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#eef2f9">
     <title>AI-Powered Email Phishing Detection System</title>
-     <style>
-        body {
-    font-family: Arial, sans-serif;
-    background: #f4f7fb;
-    margin: 0;
-    padding: 0;
-}
-
-.container {
-    width: 90%;
-    max-width: 1100px;
-    margin: 30px auto;
-    background: white;
-    padding: 25px;
-    border-radius: 14px;
-    box-shadow: 0 4px 18px ;
-}
-h1 {
-    text-align: center;
-    color: #6c0515;
-    margin-bottom: 10px;
-}
-
-.subtitle{
-    text-align: center;
-    color: #3f3f3f;
-    margin-bottom: 25px;
-}
-
-.section-title{
-    margin-top: 25px;
-    margin-bottom: 22px;
-    color: #6c0515;
-    border-left: 5px solid #6c0515;
-    padding-left: 10px;
-}
-label {
-    font-weight: bold;
-    display: block;
-    margin-top: 12px;
-    margin-bottom: 6px;
-    /* color: #333; */
-}
-
-input[type="text"], textarea, select {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 14px;
-    box-sizing: border-box;
-}
-
-textarea {
-    min-height: 140px;
-    resize: vertical;
-}
-
-.grid-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-}
-
-.btn{
-    width: 100%;
-    margin-top: 22px;
-    background: #6c0515;
-    color: white;
-    border: none;
-    padding: 14px;
-    font-size: 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-.btn:hover {
-    background: #510812;
-}
-
-.result-box {
-    margin-top: 30px;
-    padding: 18px;
-    border-radius: 10px;
-    background: #f8fafc;
-    border: 1px solid #d9e2f1;
-}
-
-.result-grid{
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin-top: 15px;
-}
-
-.card {
-    background: rgb(255, 254, 254);
-    padding: 16px;
-    border-radius: 10px;
-    border: 1px solid #e3eaf5;
-    box-shadow: 0 2px 8px;
-}
-.card h3{
-    margin-top: 0;
-    color: #510812;
-}
-
-.highlight {
-    font-size: 18px;
-    font-weight: bold;
-    color: green;
-}
-.phishing {
-    color: red;
-    font-weight: bold;
-}
-.legitimate {
-    color: green;
-    font-weight: bold;
-}
-
-.critical {
-    color: red;
-    font-weight: bold;
-}
-.high {
-    color: orange;
-    font-weight: bold;
-}
-
-.medium {
-    color: #f9a825;
-    font-weight: bold;
-}
-
-.low {
-    color: greenyellow;
-    font-weight: bold;
-}
-ul {
-    margin-top: 10px;
-    padding-left: 20px;
-}
-
-.error-box {
-    margin-top: 20px;
-    padding: 15px;
-    border-radius: 8px;
-    background: #ffe5e5;
-    color: #b71c1c;
-    border: 1px solid;
-}
-
-.footer-note {
-    margin-top: 25px;
-    font-size: 13px;
-    color: #3f3f3f;
-    text-align: center;
-}
-
-@media (max-width: 768px) {
-    .grid-2, .result-grid {
-        grid-template-columns: 1fr;
-    }
-}
-     </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="container">
-    <h1>AI-Powered Email Phishing Detection System</h1>
+    <h1>AI-Powered Email Phishing Detection System
+        <button type="button" class="info-tip info-tip--center"
+                data-tip="Paste an email and get a phishing verdict from an ML model, a deep-learning model and a Zero Trust risk score — with the reasons behind it."
+                aria-label="What this system does: analyzes an email with two machine-learning models and a Zero Trust risk score, and explains why it was flagged.">i</button>
+    </h1>
     <p class="subtitle">
         Machine Learning + Deep Learning + Zero Trust Risk Analysis
     </p>
 
-    <!-- ERROR MESSAGE -->
-    {% if error %}
-        <div class="error-box">
-            <strong>Error:</strong> {{ error }}
-        </div>
-    {% endif %}
+    <div class="analyze-layout {% if prediction %}has-result{% endif %}" id="analyzeLayout">
 
-    <!-- INPUT FORM -->
-    <h2 class="section-title">Analyze an Email</h2>
+        <!-- INPUT FORM -->
+        <section class="panel form-panel">
+            <h2 class="section-title first">Analyze an Email</h2>
 
-    <form action="/predict" method="POST">
-        <label for="subject">Email Subject</label>
-        <input type="text" id="subject" name="subject" placeholder="Enter email subject"
-               value="{{ subject if subject else '' }}">
-
-        <label for="sender">Sender Email</label>
-        <input type="text" id="sender" name="sender" placeholder="Enter sender email"
-               value="{{ sender if sender else '' }}">
-
-        <label for="email_text">Email Content / Body</label>
-        <textarea id="email_text" name="email_text" placeholder="Paste full email content here...">{{ email_text if email_text else '' }}</textarea>
-
-        <div class="grid-2">
-            <div>
-                <label for="has_link">Contains Link?</label>
-                <select id="has_link" name="has_link">
-                    <option value="0" {% if has_link == 0 %}selected{% endif %}>No</option>
-                    <option value="1" {% if has_link == 1 %}selected{% endif %}>Yes</option>
-                </select>
-            </div>
-
-            <div>
-                <label for="has_attachment">Contains Attachment?</label>
-                <select id="has_attachment" name="has_attachment">
-                    <option value="0" {% if has_attachment == 0 %}selected{% endif %}>No</option>
-                    <option value="1" {% if has_attachment == 1 %}selected{% endif %}>Yes</option>
-                </select>
-            </div>
-        </div>
-
-        <label for="urgency_flag">Urgency Indicator Present?</label>
-        <select id="urgency_flag" name="urgency_flag">
-            <option value="0" {% if urgency_flag == 0 %}selected{% endif %}>No</option>
-            <option value="1" {% if urgency_flag == 1 %}selected{% endif %}>Yes</option>
-        </select>
-
-        <button type="submit" class="btn">Analyze Email</button>
-    </form>
-
-    <!-- RESULT SECTION -->
-    {% if prediction %}
-    <div class="result-box">
-        <h2 class="section-title">Analysis Result</h2>
-
-        <div class="card">
-            <h3>Final Prediction</h3>
-            <p>
-                <strong>Classification:</strong>
-                <span class="{% if prediction.final_prediction == 'phishing' %}phishing{% else %}legitimate{% endif %}">
-                    {{ prediction.final_prediction|upper }}
-                </span>
-            </p>
-            <p><strong>Final Confidence:</strong> {{ prediction.final_confidence }}%</p>
-        </div>
-
-        <div class="result-grid">
-            <!-- ML Result -->
-            <div class="card">
-                <h3>Machine Learning Result</h3>
-                <p><strong>Model:</strong> {{ prediction.ml_result.model }}</p>
-                <p>
-                    <strong>Prediction:</strong>
-                    <span class="{% if prediction.ml_result.label_name == 'phishing' %}phishing{% else %}legitimate{% endif %}">
-                        {{ prediction.ml_result.label_name|upper }}
-                    </span>
-                </p>
-                <p><strong>Phishing Confidence:</strong> {{ prediction.ml_result.phishing_confidence }}%</p>
-            </div>
-
-            <!-- DL Result -->
-            <div class="card">
-                <h3>Deep Learning Result</h3>
-                <p><strong>Model:</strong> {{ prediction.dl_result.model }}</p>
-                <p>
-                    <strong>Prediction:</strong>
-                    <span class="{% if prediction.dl_result.label_name == 'phishing' %}phishing{% else %}legitimate{% endif %}">
-                        {{ prediction.dl_result.label_name|upper }}
-                    </span>
-                </p>
-                <p><strong>Phishing Confidence:</strong> {{ prediction.dl_result.phishing_confidence }}%</p>
-            </div>
-        </div>
-
-        <!-- ZERO TRUST -->
-        <h2 class="section-title">Zero Trust Risk Analysis</h2>
-        <div class="result-grid">
-            <div class="card">
-                <h3>Risk Summary</h3>
-                <p><strong>Risk Score:</strong> {{ zero_trust.risk_score }}/100</p>
-                <p>
-                    <strong>Risk Level:</strong>
-                    <span class="
-                        {% if zero_trust.risk_level == 'Critical' %}critical
-                        {% elif zero_trust.risk_level == 'High' %}high
-                        {% elif zero_trust.risk_level == 'Medium' %}medium
-                        {% else %}low
-                        {% endif %}
-                    ">
-                        {{ zero_trust.risk_level }}
-                    </span>
-                </p>
-                <p><strong>Trusted Sender:</strong> {{ "Yes" if zero_trust.trusted_sender else "No" }}</p>
-                <p><strong>Zero Trust Verdict:</strong> {{ zero_trust.zero_trust_verdict }}</p>
-            </div>
-
-            <div class="card">
-                <h3>Risk Reasons</h3>
-                {% if zero_trust.reasons %}
-                    <ul>
-                        {% for reason in zero_trust.reasons %}
-                            <li>{{ reason }}</li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p>No major phishing indicators detected.</p>
+            <div id="errorSlot">
+                {% if error %}
+                    <div class="error-box">
+                        <strong>Error:</strong> {{ error }}
+                    </div>
                 {% endif %}
             </div>
-        </div>
+
+            <form action="/predict" method="POST" class="inline-form" id="predictForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="subject">Subject</label>
+                        <input type="text" id="subject" name="subject" placeholder="Email subject"
+                               value="{{ subject if subject else '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="sender">Sender</label>
+                        <input type="text" id="sender" name="sender" placeholder="Sender email"
+                               value="{{ sender if sender else '' }}">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label for="email_text">Email Content</label>
+                        <textarea id="email_text" name="email_text" placeholder="Paste email content here...">{{ email_text if email_text else '' }}</textarea>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group checkbox-group">
+                        <label for="has_link">Link?</label>
+                        <select id="has_link" name="has_link">
+                            <option value="0" {% if has_link == 0 %}selected{% endif %}>No</option>
+                            <option value="1" {% if has_link == 1 %}selected{% endif %}>Yes</option>
+                        </select>
+                    </div>
+                    <div class="form-group checkbox-group">
+                        <label for="has_attachment">Attachment?</label>
+                        <select id="has_attachment" name="has_attachment">
+                            <option value="0" {% if has_attachment == 0 %}selected{% endif %}>No</option>
+                            <option value="1" {% if has_attachment == 1 %}selected{% endif %}>Yes</option>
+                        </select>
+                    </div>
+                    <div class="form-group checkbox-group">
+                        <label for="urgency_flag">Urgent?</label>
+                        <select id="urgency_flag" name="urgency_flag">
+                            <option value="0" {% if urgency_flag == 0 %}selected{% endif %}>No</option>
+                            <option value="1" {% if urgency_flag == 1 %}selected{% endif %}>Yes</option>
+                        </select>
+                    </div>
+                    <div class="form-group button-group">
+                        <button type="submit" class="btn" id="analyzeBtn">Analyze</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <!-- RESULT PANEL (inline with the form) -->
+        <aside class="panel result-panel" id="resultPanel" aria-live="polite"
+               aria-hidden="{{ 'false' if prediction else 'true' }}">
+            <button type="button" class="result-close" id="resultClose" aria-label="Hide results">
+                &times;
+            </button>
+            <div class="result-content {% if prediction %}animate{% endif %}" id="resultContent">
+                {% if prediction %}
+                    {% include '_result.html' %}
+                {% endif %}
+            </div>
+        </aside>
+
     </div>
-    {% endif %}
 
     <p class="footer-note">
         Developed for Cybersecurity Email Threat Detection using ML, DL, Flask API, and Zero Trust principles.
     </p>
 </div>
+
+    <div class="cursor-glow" aria-hidden="true"></div>
+    <div class="cursor-ring" aria-hidden="true"></div>
+
+    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
 </body>
 </html>

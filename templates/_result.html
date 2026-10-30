@@ -1,0 +1,104 @@
+<div class="result-box">
+    <div class="result-title">
+        <h2 class="section-title">Analysis Result</h2>
+        <button type="button" class="info-tip"
+                data-tip="Final verdict: {{ prediction.final_prediction|upper }} ({{ prediction.final_confidence }}% confidence). ML: {{ prediction.ml_result.label_name|upper }} {{ prediction.ml_result.phishing_confidence }}% · DL: {{ prediction.dl_result.label_name|upper }} {{ prediction.dl_result.phishing_confidence }}% · Zero Trust: {{ zero_trust.risk_score }}/100 {{ zero_trust.risk_level|upper }}. {{ zero_trust.zero_trust_verdict }}."
+                aria-label="Why this result: Machine Learning says {{ prediction.ml_result.label_name|upper }} with {{ prediction.ml_result.phishing_confidence }} percent confidence, Deep Learning says {{ prediction.dl_result.label_name|upper }} with {{ prediction.dl_result.phishing_confidence }} percent confidence, and Zero Trust risk is {{ zero_trust.risk_score }} out of 100, {{ zero_trust.risk_level }}. The final verdict is {{ prediction.final_prediction|upper }} at {{ prediction.final_confidence }} percent confidence. {{ zero_trust.zero_trust_verdict }}.">i</button>
+    </div>
+
+    <!-- Final Prediction Card -->
+    <div class="card prediction-card {% if prediction.final_prediction == 'phishing' %}phishing-card{% else %}legitimate-card{% endif %}">
+        <div class="prediction-header">
+            <h3>Final Prediction</h3>
+            <div class="prediction-badge {% if prediction.final_prediction == 'phishing' %}phishing-badge{% else %}legitimate-badge{% endif %}">
+                {{ prediction.final_prediction|upper }}
+            </div>
+        </div>
+        <div class="confidence-bar">
+            <div class="confidence-label">Confidence: {{ prediction.final_confidence }}%</div>
+            <div class="progress-bar">
+                <div class="progress-fill {% if prediction.final_prediction == 'phishing' %}phishing-fill{% else %}legitimate-fill{% endif %}"
+                     style="--w: {{ prediction.final_confidence }}%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Model Results -->
+    <div class="result-grid">
+        <!-- ML Result -->
+        <div class="card model-card">
+            <div class="model-icon">🤖</div>
+            <h3>Machine Learning</h3>
+            <p class="model-name">{{ prediction.ml_result.model }}</p>
+            <div class="model-prediction">
+                <span class="{% if prediction.ml_result.label_name == 'phishing' %}phishing{% else %}legitimate{% endif %}">
+                    {{ prediction.ml_result.label_name|upper }}
+                </span>
+            </div>
+            <div class="model-confidence">
+                <strong>{{ prediction.ml_result.phishing_confidence }}%</strong> confidence
+            </div>
+        </div>
+
+        <!-- DL Result -->
+        <div class="card model-card">
+            <div class="model-icon">🧠</div>
+            <h3>Deep Learning</h3>
+            <p class="model-name">{{ prediction.dl_result.model }}</p>
+            <div class="model-prediction">
+                <span class="{% if prediction.dl_result.label_name == 'phishing' %}phishing{% else %}legitimate{% endif %}">
+                    {{ prediction.dl_result.label_name|upper }}
+                </span>
+            </div>
+            <div class="model-confidence">
+                <strong>{{ prediction.dl_result.phishing_confidence }}%</strong> confidence
+            </div>
+        </div>
+    </div>
+
+    <!-- ZERO TRUST -->
+    <h2 class="section-title">Zero Trust Risk Analysis</h2>
+    <div class="risk-card-container">
+        <div class="card risk-summary-card {% if zero_trust.risk_level == 'Critical' %}critical-risk{% elif zero_trust.risk_level == 'High' %}high-risk{% elif zero_trust.risk_level == 'Medium' %}medium-risk{% else %}low-risk{% endif %}">
+            <div class="risk-header">
+                <h3>Risk Assessment</h3>
+                <div class="risk-badge {{ zero_trust.risk_level|lower }}-badge">
+                    {{ zero_trust.risk_level }}
+                </div>
+            </div>
+            <div class="risk-score">
+                <div class="score-value">{{ zero_trust.risk_score }}</div>
+                <div class="score-label">Risk Score</div>
+                <div class="score-max">/ 100</div>
+            </div>
+            <div class="risk-details">
+                <div class="risk-detail-item">
+                    <span class="detail-label">Trusted Sender:</span>
+                    <span class="detail-value {% if zero_trust.trusted_sender %}trusted{% else %}untrusted{% endif %}">
+                        {{ "Yes" if zero_trust.trusted_sender else "No" }}
+                    </span>
+                </div>
+                <div class="risk-detail-item">
+                    <span class="detail-label">Verdict:</span>
+                    <span class="detail-value verdict">{{ zero_trust.zero_trust_verdict }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card reasons-card">
+            <h3>Risk Factors</h3>
+            {% if zero_trust.reasons %}
+                <div class="reasons-list">
+                    {% for reason in zero_trust.reasons %}
+                        <div class="reason-item">
+                            <span class="reason-icon">⚠️</span>
+                            <span>{{ reason }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="no-reasons">No major phishing indicators detected.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>

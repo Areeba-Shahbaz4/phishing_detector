@@ -1,8 +1,11 @@
 import sqlite3
 from datetime import datetime
+from config import Config
+import os
 
 # Database file name
-DB_NAME = "email_logs.db"
+DB_NAME = Config.DB_NAME
+DB_PATH = os.path.join(Config.DB_PATH, DB_NAME) if Config.DB_PATH else DB_NAME
 
 
 # =========================
@@ -12,7 +15,11 @@ def get_connection():
     """
     Create and return a SQLite database connection.
     """
-    conn = sqlite3.connect(DB_NAME)
+    # Ensure database directory exists
+    if Config.DB_PATH and not os.path.exists(Config.DB_PATH):
+        os.makedirs(Config.DB_PATH, exist_ok=True)
+
+    conn = sqlite3.connect(DB_PATH)
     return conn
 
 
